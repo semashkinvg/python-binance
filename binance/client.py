@@ -1,18 +1,18 @@
-from typing import Dict, Optional, List, Tuple
-
-import aiohttp
 import asyncio
 import hashlib
 import hmac
-import requests
 import time
 from operator import itemgetter
+from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlencode
 
+import aiohttp
+import requests
 
-from .helpers import interval_to_milliseconds, convert_ts_str
-from .exceptions import BinanceAPIException, BinanceRequestException, NotImplementedException
 from .enums import HistoricalKlinesType
+from .exceptions import (BinanceAPIException, BinanceRequestException,
+                         NotImplementedException)
+from .helpers import convert_ts_str, interval_to_milliseconds
 
 
 class BaseClient:
@@ -262,7 +262,7 @@ class BaseClient:
             if 'requests_params' in kwargs['data']:
                 # merge requests params into kwargs
                 kwargs.update(kwargs['data']['requests_params'])
-                del(kwargs['data']['requests_params'])
+                del (kwargs['data']['requests_params'])
 
         if signed:
             # generate signature
@@ -281,7 +281,7 @@ class BaseClient:
         # if get request assign data array to params value for requests lib
         if data and (method == 'get' or force_params):
             kwargs['params'] = '&'.join('%s=%s' % (data[0], data[1]) for data in kwargs['data'])
-            del(kwargs['data'])
+            del (kwargs['data'])
 
         return kwargs
 
@@ -1889,6 +1889,24 @@ class Client(BaseClient):
 
         """
         return self._delete('order', True, data=params)
+
+    def replace_order(self, **params):
+        """Cancel an active order. Either orderId or origClientOrderId must be sent.
+
+        https://binance-docs.github.io/apidocs/spot/en/#cancel-an-existing-order-and-send-a-new-order-trade
+
+
+        :returns: API response
+
+        .. code-block:: python
+
+            {
+            }
+
+        :raises: BinanceRequestException, BinanceAPIException
+
+        """
+        return self._post('order/cancelReplace', True, data=params)
 
     def get_open_orders(self, **params):
         """Get all open orders on a symbol.
@@ -7718,6 +7736,10 @@ class AsyncClient(BaseClient):
 
     async def cancel_order(self, **params):
         return await self._delete('order', True, data=params)
+    cancel_order.__doc__ = Client.cancel_order.__doc__
+
+    async def replace_order(self, **params):
+        return await self._post('order/cancelReplace', True, data=params)
     cancel_order.__doc__ = Client.cancel_order.__doc__
 
     async def get_open_orders(self, **params):
